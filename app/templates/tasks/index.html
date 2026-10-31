@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}To-Do List – Plan Your Tasks{% endblock %}
+{% block page_title %}To-Do List{% endblock %}
+
+{% block topbar_actions %}
+  <button class="btn btn-primary btn-sm" id="btnNewTask">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Tugas Baru
+  </button>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <div class="search-wrap">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 20 20" fill="none">
+      <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"/>
+      <path d="M13.5 13.5L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <input type="text" id="searchInput" class="search-input" placeholder="Cari tugas...">
+  </div>
+  <div class="filter-group">
+    <select id="filterStatus" class="filter-select">
+      <option value="">Semua Status</option>
+      <option value="todo">Belum Dikerjakan</option>
+      <option value="in_progress">Sedang Dikerjakan</option>
+      <option value="done">Selesai</option>
+    </select>
+    <select id="filterPriority" class="filter-select">
+      <option value="">Semua Prioritas</option>
+      <option value="high">Tinggi</option>
+      <option value="medium">Sedang</option>
+      <option value="low">Rendah</option>
+    </select>
+    <select id="filterCategory" class="filter-select">
+      <option value="">Semua Kategori</option>
+    </select>
+    <select id="sortBy" class="filter-select">
+      <option value="created_at">Terbaru</option>
+      <option value="due_date">Tenggat Waktu</option>
+      <option value="priority">Prioritas</option>
+      <option value="title">Judul A-Z</option>
+    </select>
+  </div>
+</div>
+
+<!-- Task List -->
+<div id="taskListContainer" class="task-list-container">
+  <div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner"></div>
+  </div>
+  <div id="taskList" class="task-list"></div>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="8" y="12" width="48" height="44" rx="6" stroke="var(--border)" stroke-width="3"/>
+      <path d="M20 28h24M20 36h16" stroke="var(--border)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M20 20h12" stroke="var(--border)" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <p>Belum ada tugas. Buat tugas baru!</p>
+    <button class="btn btn-primary" id="btnEmptyNewTask">Tambah Tugas</button>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">Tugas Baru</h2>
+      <button class="btn-icon modal-close" id="modalClose" aria-label="Tutup">&times;</button>
+    </div>
+    <form id="taskForm" novalidate>
+      <input type="hidden" id="taskId" name="id">
+      <div class="form-grid">
+        <div class="form-group form-col-full">
+          <label class="form-label" for="taskTitle">Judul Tugas <span class="required">*</span></label>
+          <input class="form-input" type="text" id="taskTitle" name="title" placeholder="Masukkan judul tugas" required maxlength="200">
+        </div>
+        <div class="form-group form-col-full">
+          <label class="form-label" for="taskDesc">Deskripsi / Catatan</label>
+          <textarea class="form-input form-textarea" id="taskDesc" name="description" placeholder="Tambahkan catatan atau deskripsi..." rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="taskCategory">Kategori</label>
+          <input class="form-input" type="text" id="taskCategory" name="category" placeholder="cth: Kuliah, Pekerjaan" list="categoryList">
+          <datalist id="categoryList"></datalist>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="taskPriority">Prioritas</label>
+          <select class="form-input" id="taskPriority" name="priority">
+            <option value="low">Rendah</option>
+            <option value="medium" selected>Sedang</option>
+            <option value="high">Tinggi</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="taskDueDate">Tanggal Tenggat</label>
+          <input class="form-input" type="date" id="taskDueDate" name="due_date">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="taskDueTime">Jam Tenggat (opsional)</label>
+          <input class="form-input" type="time" id="taskDueTime" name="due_time">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="taskStatus">Status</label>
+          <select class="form-input" id="taskStatus" name="status">
+            <option value="todo" selected>Belum Dikerjakan</option>
+            <option value="in_progress">Sedang Dikerjakan</option>
+            <option value="done">Selesai</option>
+          </select>
+        </div>
+      </div>
+      <div id="formErrors" class="alert alert-error" style="display:none"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="modalCancelBtn">Batal</button>
+        <button type="submit" class="btn btn-primary" id="modalSubmitBtn">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle" style="display:none">
+  <div class="modal modal-detail">
+    <div class="modal-header">
+      <h2 class="modal-title" id="detailModalTitle"></h2>
+      <button class="btn-icon modal-close" id="detailModalClose" aria-label="Tutup">&times;</button>
+    </div>
+    <div id="detailContent" class="detail-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="detailDeleteBtn">Hapus</button>
+      <button class="btn btn-primary" id="detailEditBtn">Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" style="display:none">
+  <div class="modal modal-confirm">
+    <div class="modal-header">
+      <h2 class="modal-title">Hapus Tugas?</h2>
+    </div>
+    <p class="confirm-text">Tindakan ini tidak dapat dibatalkan. Yakin ingin menghapus tugas ini?</p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="confirmCancelBtn">Batal</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+{% endblock %}

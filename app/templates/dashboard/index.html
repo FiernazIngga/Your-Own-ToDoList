@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Plan Your Tasks{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{{ url_for('tasks.index') }}" class="btn btn-primary btn-sm" id="btnNewTaskTop">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Tugas Baru
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+
+  <!-- Stat Cards -->
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-total">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.total }}</span>
+        <span class="stat-label">Total Tugas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-done">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.done }}</span>
+        <span class="stat-label">Selesai</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-inprogress">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.in_progress }}</span>
+        <span class="stat-label">Sedang Dikerjakan</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-todo">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="3" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.todo }}</span>
+        <span class="stat-label">Belum Dikerjakan</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card-overdue">
+      <div class="stat-icon stat-icon-overdue">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M10 3v8M10 14v1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.overdue }}</span>
+        <span class="stat-label">Terlambat</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Tasks -->
+  <div class="dashboard-panel">
+    <div class="panel-header">
+      <h2 class="panel-title">Tugas Mendatang</h2>
+      <a href="{{ url_for('tasks.index') }}" class="panel-link">Lihat semua</a>
+    </div>
+    <div class="task-list-preview" id="upcomingList">
+      {% if stats.upcoming %}
+        {% for task in stats.upcoming %}
+        <div class="task-preview-item priority-{{ task.priority }} status-{{ task.status }}">
+          <div class="task-preview-left">
+            <span class="priority-dot"></span>
+            <div class="task-preview-info">
+              <span class="task-preview-title">{{ task.title }}</span>
+              {% if task.category %}
+              <span class="task-preview-cat">{{ task.category }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="task-preview-right">
+            {% if task.due_date %}
+            <span class="task-preview-due">{{ task.due_date }}{% if task.due_time %} {{ task.due_time }}{% endif %}</span>
+            {% endif %}
+            <span class="badge-status badge-{{ task.status }}">
+              {% if task.status == 'todo' %}Belum
+              {% elif task.status == 'in_progress' %}Proses
+              {% else %}Selesai{% endif %}
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state-small">
+          <p>Tidak ada tugas mendatang. Selamat!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Mini Calendar -->
+  <div class="dashboard-panel">
+    <div class="panel-header">
+      <h2 class="panel-title">Kalender</h2>
+      <a href="{{ url_for('calendar.index') }}" class="panel-link">Lihat penuh</a>
+    </div>
+    <div id="miniCalendar" class="mini-calendar"></div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/mini-calendar.js') }}"></script>
+{% endblock %}

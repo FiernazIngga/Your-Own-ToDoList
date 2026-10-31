@@ -1,0 +1,9 @@
+{
+  "coba@gmail.com": {
+    "id": "437084b9-7187-4d7f-a5e1-2815221577d3",
+    "name": "Percobaan",
+    "email": "coba@gmail.com",
+    "password_hash": "scrypt:32768:8:1$xi6UwUMdGmuotPoN$37826565f5650bf6c099ad66acb55d10bbb59d78af9233f0ad96090b42dbb71b7706b8871234a2b0f3339ed57ae8d63540e6827f5605c0e68d3c84863ca2aab1",
+    "created_at": "2026-10-31T04:53:21.717048"
+  }
+}
